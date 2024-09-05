@@ -125,6 +125,7 @@ function playRound(index){
     function restartGame(){
         gameStatus = 1;
         activePlayer = player1;
+        document.querySelector('p').textContent = `Player ${activePlayer.figure}'s turn`;
         gameBoard.boardReset();
         console.log('Game has been reset!');
         gameBoard.showBoard();
