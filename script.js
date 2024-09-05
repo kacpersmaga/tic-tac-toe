@@ -26,6 +26,9 @@ const gameBoard = (function() {
 
     function boardReset(){
         board = board.map(index => '');
+
+        const cells = document.querySelectorAll('.cell');
+        cells.forEach(cell => cell.textContent = '');
     }
 
     return {
@@ -47,27 +50,47 @@ const gameController = (function() {
     let activePlayer = player1;
     let gameStatus = 1; // 1: game in progress, 0: game over
 
-    function playRound(index){
-        if(gameStatus === 1){
-            const figure = activePlayer.figure;
+    document.querySelectorAll('.cell').forEach(cell => {
+    cell.addEventListener('click', function() {
+        const index = parseInt(cell.id); 
+        gameController.playRound(index); 
+    });
+});
 
-            if(gameBoard.move(index, figure)){
-                console.log(`Player ${figure} placed ${figure} on index ${index}`);
-                gameBoard.showBoard();
+function playRound(index){
+    let informationText = document.querySelector('p');
 
-                if(checkWinner())
-                    console.log(`Player ${figure} wins!`);
-                else {
-                    changeActivePlayer();
-                }
+    if(gameStatus === 1){
+        const figure = activePlayer.figure;
+
+        if(gameBoard.move(index, figure)){
+            console.log(`Player ${figure} placed ${figure} on index ${index}`);
+            document.getElementById(index).textContent = figure;
+            gameBoard.showBoard();
+
+            if(checkWinner()){
+                console.log(`Player ${figure} wins!`);
+                informationText.textContent = `Player ${figure} wins!`;
+                displayRestartButton();
+            } else if(checkDraw()) {
+                informationText.textContent = 'It\'s a draw!';
+                gameStatus = 0;
+                displayRestartButton();
             } else {
-                console.log('Spot already taken');
+                changeActivePlayer();
             }
         } else {
-            console.log('You have to reset the game');
+            console.log('Spot already taken');
         }
-
+    } else {
+        console.log('You have to reset the game');
     }
+
+    if(gameStatus === 1) {
+        informationText.textContent = `Player ${activePlayer.figure}'s turn`;
+    }
+}
+
 
     function changeActivePlayer(){
         activePlayer = activePlayer === player1? player2 : player1;
@@ -93,6 +116,12 @@ const gameController = (function() {
         return false;
     }
 
+    function checkDraw(){
+        const board = gameBoard.getBoard();
+        return board.every(cell => cell !== '');
+
+    }
+
     function restartGame(){
         gameStatus = 1;
         activePlayer = player1;
@@ -101,8 +130,20 @@ const gameController = (function() {
         gameBoard.showBoard();
     }
 
+    function displayRestartButton(){
+        const main = document.querySelector('main');
+        const button = document.createElement('button');
+        button.textContent = 'Restart Game';
+        button.addEventListener('click', function() {
+            gameController.restartGame();
+            main.removeChild(button);
+        });
+        main.appendChild(button);
+    }
+
     return {
         playRound,
-        restartGame
+        restartGame,
     };
 })()
+
