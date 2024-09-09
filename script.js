@@ -69,9 +69,15 @@ const gameController = (() => {
             [0, 3, 6], [1, 4, 7], [2, 5, 8],
             [0, 4, 8], [2, 4, 6]
         ];
-        return winCombos.some(([a, b, c]) => 
-            board[a] && board[a] === board[b] && board[a] === board[c]
-        );
+        for (const [a, b, c] of winCombos) {
+            if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                document.getElementById(a).classList.add('winning-cell');
+                document.getElementById(b).classList.add('winning-cell');
+                document.getElementById(c).classList.add('winning-cell');
+                return true;
+            }
+        }
+        return false;
     };
 
     const checkDraw = () => gameBoard.getBoard().every(cell => cell !== '');
@@ -81,6 +87,7 @@ const gameController = (() => {
         activePlayer = player1;
         document.querySelector('p').textContent = `Player ${activePlayer.figure}'s turn`;
         gameBoard.resetBoard();
+        document.querySelectorAll('.cell').forEach(cell => cell.classList.remove('winning-cell'));
         gameBoard.showBoard();
     };
 
