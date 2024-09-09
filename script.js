@@ -148,3 +148,16 @@ function playRound(index){
     };
 })()
 
+function showGame() {
+    const main = document.querySelector('main');
+    const intro = document.querySelector('.intro');
+  
+    intro.classList.add('fadeOut');
+    intro.classList.remove('fadeIn');
+    main.classList.add('fadeIn');
+    main.classList.remove('fadeOut');
+  }
+  
+  const introBtn = document.querySelector('.intro button');
+  introBtn.addEventListener('click', showGame);
+
