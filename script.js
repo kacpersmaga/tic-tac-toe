@@ -1,163 +1,113 @@
-const gameBoard = (function() {
-    let board = ['','','','','','','','',''];
+const gameBoard = (() => {
+    let board = Array(9).fill('');
 
-    function move(index, figure){
-        if(board[index] === ''){
+    const move = (index, figure) => {
+        if (board[index] === '') {
             board[index] = figure;
             return true;
         }
-        else{
-            return false;
-        }
-
-    }
-
-    function showBoard(){
-        console.log(`${board[0]} | ${board[1]} | ${board[2]}`);
-        console.log(`---------`);
-        console.log(`${board[3]} | ${board[4]} | ${board[5]}`);
-        console.log(`---------`);
-        console.log(`${board[6]} | ${board[7]} | ${board[8]}`);
-    }
-
-    function getBoard(){
-        return board;
-    }
-
-    function boardReset(){
-        board = board.map(index => '');
-
-        const cells = document.querySelectorAll('.cell');
-        cells.forEach(cell => cell.textContent = '');
-    }
-
-    return {
-        move,
-        showBoard,
-        getBoard,
-        boardReset
+        return false;
     };
 
-})()
+    const showBoard = () => {
+        console.log(board.slice(0, 3).join(' | '));
+        console.log('---------');
+        console.log(board.slice(3, 6).join(' | '));
+        console.log('---------');
+        console.log(board.slice(6).join(' | '));
+    };
 
-function player(figure){
-    return { figure };
-}
+    const getBoard = () => board;
 
-const gameController = (function() {
+    const resetBoard = () => {
+        board.fill('');
+        document.querySelectorAll('.cell').forEach(cell => cell.textContent = '');
+    };
+
+    return { move, showBoard, getBoard, resetBoard };
+})();
+
+const player = (figure) => ({ figure });
+
+const gameController = (() => {
     const player1 = player('x');
     const player2 = player('o');
     let activePlayer = player1;
-    let gameStatus = 1; // 1: game in progress, 0: game over
+    let gameStatus = 1; // 1: in progress, 0: game over
 
-    document.querySelectorAll('.cell').forEach(cell => {
-    cell.addEventListener('click', function() {
-        const index = parseInt(cell.id); 
-        gameController.playRound(index); 
-    });
-});
+    const playRound = (index) => {
+        const infoText = document.querySelector('p');
+        if (gameStatus === 1) {
+            if (gameBoard.move(index, activePlayer.figure)) {
+                document.getElementById(index).textContent = activePlayer.figure;
+                gameBoard.showBoard();
 
-function playRound(index){
-    let informationText = document.querySelector('p');
-
-    if(gameStatus === 1){
-        const figure = activePlayer.figure;
-
-        if(gameBoard.move(index, figure)){
-            console.log(`Player ${figure} placed ${figure} on index ${index}`);
-            document.getElementById(index).textContent = figure;
-            gameBoard.showBoard();
-
-            if(checkWinner()){
-                console.log(`Player ${figure} wins!`);
-                informationText.textContent = `Player ${figure} wins!`;
-                displayRestartButton();
-            } else if(checkDraw()) {
-                informationText.textContent = 'It\'s a draw!';
-                gameStatus = 0;
-                displayRestartButton();
+                if (checkWinner()) {
+                    infoText.textContent = `Player ${activePlayer.figure} wins!`;
+                    gameStatus = 0;
+                    displayRestartButton();
+                } else if (checkDraw()) {
+                    infoText.textContent = "It's a draw!";
+                    gameStatus = 0;
+                    displayRestartButton();
+                } else {
+                    activePlayer = (activePlayer === player1) ? player2 : player1;
+                    infoText.textContent = `Player ${activePlayer.figure}'s turn`;
+                }
             } else {
-                changeActivePlayer();
+                console.log('Spot already taken');
             }
         } else {
-            console.log('Spot already taken');
+            console.log('Game over. Please restart.');
         }
-    } else {
-        console.log('You have to reset the game');
-    }
+    };
 
-    if(gameStatus === 1) {
-        informationText.textContent = `Player ${activePlayer.figure}'s turn`;
-    }
-}
-
-
-    function changeActivePlayer(){
-        activePlayer = activePlayer === player1? player2 : player1;
-    }
-
-    function checkWinner(){
+    const checkWinner = () => {
         const board = gameBoard.getBoard();
-
-        const winningCombinations = [
+        const winCombos = [
             [0, 1, 2], [3, 4, 5], [6, 7, 8],
-            [0, 3, 6], [1, 4, 7], [2, 5, 8], 
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],
             [0, 4, 8], [2, 4, 6]
-        ];   
-    
-        for(let combination of winningCombinations){
-            const [a,b,c] = combination;
+        ];
+        return winCombos.some(([a, b, c]) => 
+            board[a] && board[a] === board[b] && board[a] === board[c]
+        );
+    };
 
-            if (board[a] !== '' && board[a] === board[b] && board[a] === board[c]) {
-                gameStatus = 0;
-                return true;
-            }
-        }
-        return false;
-    }
+    const checkDraw = () => gameBoard.getBoard().every(cell => cell !== '');
 
-    function checkDraw(){
-        const board = gameBoard.getBoard();
-        return board.every(cell => cell !== '');
-
-    }
-
-    function restartGame(){
+    const restartGame = () => {
         gameStatus = 1;
         activePlayer = player1;
         document.querySelector('p').textContent = `Player ${activePlayer.figure}'s turn`;
-        gameBoard.boardReset();
-        console.log('Game has been reset!');
+        gameBoard.resetBoard();
         gameBoard.showBoard();
-    }
+    };
 
-    function displayRestartButton(){
+    const displayRestartButton = () => {
         const main = document.querySelector('main');
         const button = document.createElement('button');
         button.textContent = 'Restart Game';
-        button.addEventListener('click', function() {
-            gameController.restartGame();
+        button.addEventListener('click', () => {
+            restartGame();
             main.removeChild(button);
         });
         main.appendChild(button);
-    }
-
-    return {
-        playRound,
-        restartGame,
     };
-})()
 
-function showGame() {
-    const main = document.querySelector('main');
-    const intro = document.querySelector('.intro');
-  
-    intro.classList.add('fadeOut');
-    intro.classList.remove('fadeIn');
-    main.classList.add('fadeIn');
-    main.classList.remove('fadeOut');
-  }
-  
-  const introBtn = document.querySelector('.intro button');
-  introBtn.addEventListener('click', showGame);
+    const showGame = () => {
+        document.querySelector('.intro').classList.replace('fadeIn', 'fadeOut');
+        document.querySelector('main').classList.replace('fadeOut', 'fadeIn');
+    };
 
+    document.querySelectorAll('.cell').forEach(cell => {
+        cell.addEventListener('click', () => {
+            const index = parseInt(cell.id, 10);
+            playRound(index);
+        });
+    });
+
+    document.querySelector('.intro button').addEventListener('click', showGame);
+
+    return { playRound, restartGame };
+})();
