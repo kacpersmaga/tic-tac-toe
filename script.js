@@ -1,31 +1,34 @@
-const gameBoard = (() => {
-    let board = Array(9).fill('');
+class GameBoard {
+    constructor() {
+        this.board = Array(9).fill('');
+    }
 
-    const move = (index, figure) => {
-        if (board[index] === '') {
-            board[index] = figure;
+    move(index, figure) {
+        if (this.board[index] === '') {
+            this.board[index] = figure;
             return true;
         }
         return false;
-    };
+    }
 
-    const showBoard = () => {
-        console.log(board.slice(0, 3).join(' | '));
+    showBoard() {
+        console.log(this.board.slice(0, 3).join(' | '));
         console.log('---------');
-        console.log(board.slice(3, 6).join(' | '));
+        console.log(this.board.slice(3, 6).join(' | '));
         console.log('---------');
-        console.log(board.slice(6).join(' | '));
-    };
+        console.log(this.board.slice(6).join(' | '));
+    }
 
-    const getBoard = () => board;
+    getBoard() {
+        return this.board;
+    }
 
-    const resetBoard = () => {
-        board.fill('');
+    resetBoard() {
+        this.board.fill('');
         document.querySelectorAll('.cell').forEach(cell => cell.textContent = '');
-    };
-
-    return { move, showBoard, getBoard, resetBoard };
-})();
+    }
+}
+const gameBoard = new GameBoard();
 
 const player = (figure) => ({ figure });
 
